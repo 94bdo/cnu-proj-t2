@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>School Quiz Access</title>
+  <script>
+    // Your school coordinates (latitude, longitude)
+    const schoolLat = 29.970144090228956;
+    const schoolLng = 31.319581850088678;
+    const allowedRadius = 0.3; // in km (adjust how close they must be)
+
+    // Quiz link
+    const quizLink = "https://forms.gle/6QDKEYorpGbskCtWA";
+
+    function toRad(x) {
+      return x * Math.PI / 180;
+    }
+
+    function getDistance(lat1, lon1, lat2, lon2) {
+      let R = 6371; // Earth radius in km
+      let dLat = toRad(lat2-lat1);
+      let dLon = toRad(lon2-lon1);
+      let a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+      let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+
+    function checkLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          let userLat = position.coords.latitude;
+          let userLng = position.coords.longitude;
+          let distance = getDistance(userLat, userLng, schoolLat, schoolLng);
+
+          if (distance <= allowedRadius) {
+            window.location.href = quizLink; // redirect to quiz
+          } else {
+            document.getElementById("message").innerHTML = 
+              "❌ You must be inside school to access this quiz.";
+          }
+        }, function() {
+          document.getElementById("message").innerHTML = 
+            "⚠️ Location access denied.";
+        });
+      } else {
+        document.getElementById("message").innerHTML = 
+          "⚠️ Geolocation is not supported on this device.";
+      }
+    }
+  </script>
+</head>
+<body onload="checkLocation()">
+  <h2>Checking location...</h2>
+  <p id="message"></p>
+</body>
+</html>
